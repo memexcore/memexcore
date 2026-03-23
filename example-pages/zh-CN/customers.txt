@@ -1,0 +1,20 @@
+== 活跃客户列表 ==
+
+ID    | 公司                 | 细分市场    | 套餐        | 状态     | MRR
+------+----------------------+-------------+-------------+----------+--------
+C-001 | TechFlow Labs        | 初创企业    | Pro         | 活跃     | $99
+C-002 | DataBridge Corp      | 大型企业    | Enterprise  | 活跃     | $450
+C-003 | CloudNine AI         | 中型企业    | Pro         | 活跃     | $99
+C-004 | Vertex Solutions     | 大型企业    | Enterprise  | 活跃     | $600
+C-005 | NovaSoft             | 初创企业    | Starter     | 活跃     | $29
+C-006 | Pinnacle Analytics   | 中型企业    | Pro         | 有风险   | $99
+C-007 | BlueShift Inc        | 大型企业    | Enterprise  | 活跃     | $500
+C-008 | AgileMinds           | 初创企业    | Starter     | 已流失   | $0
+C-009 | Quantum Dynamics     | 中型企业    | Pro         | 活跃     | $99
+C-010 | SynapseAI            | 初创企业    | Pro         | 活跃     | $99
+
+摘要：
+  活跃客户总数：8
+  月流失率：2.1%
+  客户 MRR 合计：$2,074
+  主要细分市场：大型企业（3 个客户，占 MRR 的 74%）

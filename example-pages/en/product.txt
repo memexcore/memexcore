@@ -1,0 +1,24 @@
+== Acme Platform - Product Sheet ==
+
+Name: Acme Platform
+Category: Developer Tools / AI Infrastructure
+Current version: 2.1.0
+
+Description:
+  Minimalist platform for providing structured context to AI agents
+  via standard HTTP. Replaces complex integrations with short-lived
+  signed URLs that agents can consume directly.
+
+Key features:
+  - Sessions with signed URLs (HMAC-SHA256)
+  - Plain-text context pages served via HTTP
+  - Automatic token expiration
+  - Real-time session revocation
+  - Zero external dependencies
+
+Plans:
+  Starter    - $29/mo  - 100 sessions/day, 10 pages
+  Pro        - $99/mo  - 1,000 sessions/day, 50 pages
+  Enterprise - Custom   - Unlimited, dedicated SLA
+
+Integrations: Compatible with any agent that makes HTTP GET requests.

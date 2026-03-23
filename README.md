@@ -1,23 +1,91 @@
 # Context Pages
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Bun](https://img.shields.io/badge/runtime-Bun-f9f1e1.svg)](https://bun.sh)
+[![Docker](https://img.shields.io/badge/docker-ready-2496ED.svg)](docker-compose.yml)
+
 [English](./README.md) | [中文](./README.zh-CN.md) | [Español](./README.es.md)
 
-Context Pages is a minimalist alternative to the Model Context Protocol (MCP) for providing context to AI agents via standard HTTP. Instead of requiring custom protocols or SDKs, it serves plain-text context pages through signed URLs with HMAC authentication, automatic key rotation, per-session rate limiting, and structured audit logging. Built with Bun and SQLite for minimal footprint and zero external dependencies. 
+A minimalist alternative to the Model Context Protocol (MCP) for providing context to AI agents via standard HTTP. Instead of requiring custom protocols or SDKs, it serves plain-text context pages through signed URLs with HMAC authentication, automatic key rotation, per-session rate limiting, and structured audit logging. Built with Bun and SQLite for minimal footprint and zero external dependencies.
 
-## Architecture
+## Why not MCP?
+
+| | Context Pages | MCP |
+|---|---|---|
+| **Protocol** | Standard HTTP + signed URLs | Custom protocol over stdio/SSE |
+| **Integration** | Any HTTP client (`curl`, `fetch`) | Requires MCP SDK per language |
+| **Auth model** | HMAC-signed URLs with auto-rotation | Depends on transport implementation |
+| **Setup** | One `docker compose up` | Server + client SDK + config per agent |
+| **Context delivery** | Plain text over GET — agents read it natively | Tool calls that return structured objects |
+
+MCP is powerful for bidirectional tool use. Context Pages is for when you just need to **give an agent something to read** — securely, with no SDK, no schema, and no ceremony.
+
+## Quick Example
+
+```bash
+# 1. Start the server
+docker compose up -d
+
+# 2. Create a session (returns signed URLs)
+curl -s -X POST http://localhost:3000/session \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": "agent-01", "pages": ["sales-report"]}' | jq .
+
+# Response includes ready-to-use signed URLs:
+# {
+#   "session_id": "...",
+#   "expires_at": 1234567890,
+#   "context_urls": {
+#     "sales-report": "http://localhost:3000/context/sales-report?sid=...&exp=...&sig=..."
+#   }
+# }
+
+# 3. Fetch context using the signed URL (no auth header needed)
+curl -s "<signed_url_from_step_2>"
+```
+
+The signed URL is all the agent needs. No tokens, no SDK, no config.
+
+## How it works
+
+```mermaid
+sequenceDiagram
+    participant U as User / Orchestrator
+    participant S as Context Pages Server
+    participant A as AI Agent
+
+    U->>S: POST /session {user_id, pages}
+    S-->>U: {session_id, context_urls (signed)}
+
+    U->>A: Inject signed URLs into agent context
+
+    A->>S: GET /context/page?sid=...&exp=...&sig=...
+    Note right of S: 1. Check exp > now<br/>2. Verify HMAC signature<br/>3. Check session not revoked
+    S-->>A: 200 Plain text content
+
+    U->>S: DELETE /session/:id
+    Note right of S: Session revoked
+
+    A->>S: GET /context/page?sid=...&exp=...&sig=...
+    S-->>A: 403 session_revoked
+```
+
+The validation is **purely cryptographic** — no database lookup on the hot path. The server reconstructs the HMAC signature from the URL parameters and compares it using constant-time comparison:
 
 ```
-Server (:3000)
-  POST /session          — creates session and generates signed URLs
-  GET  /context/:page    — validates HMAC and serves plain text
-  GET  /session/:id      — inspects session state
-  DELETE /session/:id    — revokes session
-
-        | Signed URLs
-        v
-    Agent / CLI
-    (consumes context pages via HTTP GET)
+HMAC-SHA256(secret, "{session_id}:{page_id}:{exp}") == sig?
 ```
+
+The agent is **completely stateless** in terms of auth. It doesn't store credentials or refresh tokens — it just follows the signed URLs it was given. When they expire, the session is over.
+
+### API Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/session` | Creates a session and returns signed URLs |
+| `GET` | `/context/:page` | Validates HMAC and serves plain text |
+| `GET` | `/session/:id` | Inspects session state |
+| `DELETE` | `/session/:id` | Revokes a session |
 
 ## Requirements
 
@@ -31,7 +99,14 @@ Server (:3000)
 docker compose up
 ```
 
-This starts the server at `http://localhost:3000`. Context pages are read from `server/pages/` and the database is persisted in a Docker volume.
+This starts the server at `http://localhost:3000`. Context pages are read from `example-pages/en/` by default and the database is persisted in a Docker volume. To use a different language or your own pages, change the volume mount in `docker-compose.yml`:
+
+```yaml
+volumes:
+  - ./example-pages/es:/app/pages:ro   # Spanish examples
+  - ./example-pages/zh-CN:/app/pages:ro # Chinese examples
+  - ./my-pages:/app/pages:ro            # Your own pages
+```
 
 ### Without Docker
 
@@ -44,7 +119,7 @@ cd server && bun run start
 ```bash
 SESSION_TTL=10 docker compose up
 # or without Docker:
-cd orchestrator && SESSION_TTL=10 bun run start
+cd server && SESSION_TTL=10 bun run start
 ```
 
 ## Environment Variables
@@ -75,7 +150,7 @@ The context server limits requests per `session_id` to `RATE_LIMIT_RPM` per minu
 Every request to the context server is logged to stdout in JSON format:
 
 ```json
-{"ts":"2026-03-14T12:00:00.000Z","event":"page_read","session_id":"uuid","page_id":"ventas","ip":"127.0.0.1","result":"ok","sig_prefix":"a4d94dfb"}
+{"ts":"2026-03-14T12:00:00.000Z","event":"page_read","session_id":"uuid","page_id":"sales-report","ip":"127.0.0.1","result":"ok","sig_prefix":"a4d94dfb"}
 ```
 
 Events: `page_read`, `token_expired`, `invalid_signature`, `session_revoked`, `rate_limited`, `page_not_found`.
@@ -94,3 +169,20 @@ All context server responses include:
 ```bash
 cd server && bun test src/tests/
 ```
+
+## Example Pages
+
+The `example-pages/` directory contains sample context pages in multiple languages:
+
+```
+example-pages/
+  en/          # English
+  es/          # Spanish
+  zh-CN/       # Chinese (Simplified)
+```
+
+Each directory contains the same set of demo pages (sales report, customers, product sheet) so you can test the full flow in your preferred language. To use your own pages, just point `PAGES_DIR` to any directory with `.txt` files.
+
+## License
+
+[MIT](LICENSE)

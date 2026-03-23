@@ -12,7 +12,7 @@ services:
       - RATE_LIMIT_RPM=${RATE_LIMIT_RPM:-60}
     volumes:
       - context-pages-data:/app/data
-      - ./server/pages:/app/pages:ro
+      - ./example-pages/en:/app/pages:ro
 
 volumes:
   context-pages-data:

@@ -1,0 +1,20 @@
+== Base de Clientes Activos ==
+
+ID    | Empresa              | Segmento    | Plan        | Estado   | MRR
+------+----------------------+-------------+-------------+----------+--------
+C-001 | TechFlow Labs        | Startup     | Pro         | Activo   | $99
+C-002 | DataBridge Corp      | Enterprise  | Enterprise  | Activo   | $450
+C-003 | CloudNine AI         | Mid-market  | Pro         | Activo   | $99
+C-004 | Vertex Solutions     | Enterprise  | Enterprise  | Activo   | $600
+C-005 | NovaSoft             | Startup     | Starter     | Activo   | $29
+C-006 | Pinnacle Analytics   | Mid-market  | Pro         | En riesgo| $99
+C-007 | BlueShift Inc        | Enterprise  | Enterprise  | Activo   | $500
+C-008 | AgileMinds           | Startup     | Starter     | Churned  | $0
+C-009 | Quantum Dynamics     | Mid-market  | Pro         | Activo   | $99
+C-010 | SynapseAI            | Startup     | Pro         | Activo   | $99
+
+Resumen:
+  Total clientes activos: 8
+  Churn rate mensual: 2.1%
+  MRR total clientes: $2,074
+  Segmento principal: Enterprise (3 clientes, 74% del MRR)

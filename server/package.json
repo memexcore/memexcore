@@ -1,7 +1,23 @@
 {
   "name": "context-pages-server",
   "version": "0.1.0",
+  "description": "Minimalist alternative to MCP for providing context to AI agents via signed HTTP URLs",
   "type": "module",
+  "keywords": [
+    "ai-agents",
+    "context",
+    "mcp",
+    "mcp-alternative",
+    "model-context-protocol",
+    "llm",
+    "claude",
+    "hmac",
+    "signed-urls",
+    "bun",
+    "sqlite",
+    "ai-tools",
+    "developer-tools"
+  ],
   "scripts": {
     "start": "bun run src/index.ts",
     "test": "bun test src/tests/"

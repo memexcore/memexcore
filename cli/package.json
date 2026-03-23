@@ -1,7 +1,21 @@
 {
   "name": "context-pages-cli",
   "version": "0.1.0",
+  "description": "CLI for Context Pages — create sessions and generate signed URLs for AI agents",
   "type": "module",
+  "keywords": [
+    "ai-agents",
+    "context",
+    "mcp",
+    "mcp-alternative",
+    "cli",
+    "llm",
+    "claude",
+    "hmac",
+    "signed-urls",
+    "ai-tools",
+    "developer-tools"
+  ],
   "bin": {
     "context-pages": "./index.ts"
   },
