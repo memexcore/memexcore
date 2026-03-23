@@ -261,6 +261,10 @@ See the full [ROADMAP.md](./ROADMAP.md) for details. Here's what's coming next:
 - **Observability** with OpenTelemetry metrics and a simple dashboard
 - **Governance** — `CONTRIBUTING.md`, `SECURITY.md`, semantic versioning, and changelog
 
+## Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on how to get started, submit pull requests, and report bugs.
+
 ## License
 
 [MIT](LICENSE)
