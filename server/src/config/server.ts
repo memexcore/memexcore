@@ -15,7 +15,7 @@ export const HMAC_TTL_SECONDS: number = validatePositiveInt("HMAC_TTL", process.
 export const SESSION_TTL_SECONDS: number = validatePositiveInt("SESSION_TTL", process.env.SESSION_TTL, 300);
 export const RATE_LIMIT_RPM: number = validatePositiveInt("RATE_LIMIT_RPM", process.env.RATE_LIMIT_RPM, 60);
 export const SERVER_PORT: number = validatePositiveInt("PORT", process.env.PORT, 3000);
-export const PAGES_DIR: string = process.env.PAGES_DIR ?? resolve(import.meta.dir, "..", "..", "pages");
+export const PAGES_DIR: string = process.env.PAGES_DIR ?? resolve(import.meta.dir, "..", "..", "..", "example-pages", "en");
 
 if (!existsSync(PAGES_DIR)) {
   console.error(`[config] PAGES_DIR does not exist: ${PAGES_DIR}`);
