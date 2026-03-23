@@ -35,22 +35,22 @@ function printJson(data: unknown): void {
 }
 
 function usage(): never {
-  console.log(`context-pages — CLI para Context Pages
+  console.log(`context-pages — CLI for Context Pages
 
-Uso:
+Usage:
   context-pages session create  --user <id> --pages <p1,p2,...>
   context-pages session get     <session_id>
   context-pages session delete  <session_id>
   context-pages generate        --user <id> --pages <p1,p2,...> [--output <path>]
 
-Opciones globales:
-  --server <url>   URL del servidor (default: $SERVER_URL o http://localhost:3000)
-  --help                 Muestra esta ayuda
+Global options:
+  --server <url>   Server URL (default: $SERVER_URL or http://localhost:3000)
+  --help                 Show this help
 
-Ejemplos:
-  context-pages session create --user agent-001 --pages ventas,producto
-  context-pages generate --user agent-001 --pages ventas,producto,clientes
-  context-pages generate --user agent-001 --pages ventas --output ./project/CLAUDE.md
+Examples:
+  context-pages session create --user agent-001 --pages sales,product
+  context-pages generate --user agent-001 --pages sales,product,clients
+  context-pages generate --user agent-001 --pages sales --output ./project/CLAUDE.md
   context-pages session get abc-123
   context-pages session delete abc-123`);
   process.exit(0);
@@ -87,11 +87,11 @@ async function sessionCreate(flags: Record<string, string>): Promise<void> {
   const user = flags.user;
   const pagesRaw = flags.pages;
 
-  if (!user) fatal("se requiere --user <id>");
-  if (!pagesRaw) fatal("se requiere --pages <page1,page2,...>");
+  if (!user) fatal("--user <id> is required");
+  if (!pagesRaw) fatal("--pages <page1,page2,...> is required");
 
   const pages = pagesRaw.split(",").map((p) => p.trim()).filter(Boolean);
-  if (pages.length === 0) fatal("se requiere al menos una página");
+  if (pages.length === 0) fatal("at least one page is required");
 
   const data = await apiRequest("POST", "/session", { user_id: user, pages });
 
@@ -99,14 +99,14 @@ async function sessionCreate(flags: Record<string, string>): Promise<void> {
 }
 
 async function sessionGet(sessionId: string): Promise<void> {
-  if (!sessionId) fatal("se requiere <session_id>");
+  if (!sessionId) fatal("<session_id> is required");
 
   const data = await apiRequest("GET", `/session/${sessionId}`);
   printJson(data);
 }
 
 async function sessionDelete(sessionId: string): Promise<void> {
-  if (!sessionId) fatal("se requiere <session_id>");
+  if (!sessionId) fatal("<session_id> is required");
 
   const data = await apiRequest("DELETE", `/session/${sessionId}`);
   printJson(data);
@@ -117,11 +117,11 @@ async function generateClaudeMd(flags: Record<string, string>): Promise<void> {
   const pagesRaw = flags.pages;
   const output = flags.output ?? "./CLAUDE.md";
 
-  if (!user) fatal("se requiere --user <id>");
-  if (!pagesRaw) fatal("se requiere --pages <page1,page2,...>");
+  if (!user) fatal("--user <id> is required");
+  if (!pagesRaw) fatal("--pages <page1,page2,...> is required");
 
   const pages = pagesRaw.split(",").map((p) => p.trim()).filter(Boolean);
-  if (pages.length === 0) fatal("se requiere al menos una página");
+  if (pages.length === 0) fatal("at least one page is required");
 
   // Create session via API
   const data = (await apiRequest("POST", "/session", { user_id: user, pages })) as {
@@ -135,26 +135,26 @@ async function generateClaudeMd(flags: Record<string, string>): Promise<void> {
     .map(([page, url]) => `- **${page}**: \`${url}\``)
     .join("\n");
 
-  const content = `# Context Pages — Sesión activa
+  const content = `# Context Pages — Active Session
 
-## Instrucciones
+## Instructions
 
-Tenés acceso a páginas de contexto via HTTP. Cuando necesites información
-sobre alguno de los temas disponibles, haz curl method GET a la URL correspondiente.
-Las URLs expiran a las ${new Date(data.expires_at * 1000).toISOString()}.
+You have access to context pages via HTTP. When you need information
+about any of the available topics, make a GET request to the corresponding URL.
+URLs expire at ${new Date(data.expires_at * 1000).toISOString()}.
 
-## Cómo usar las URLs
+## How to use the URLs
 
-Usá la herramienta CURL para hacer GET a las URLs.
-El contenido es texto plano — leelo y usalo como contexto para tu tarea.
+Use the CURL tool to make GET requests to the URLs.
+The content is plain text — read it and use it as context for your task.
 
-Si recibís un error, el campo \`error.code\` indica el motivo:
-- \`token_expired\` (401): la sesión expiró — pedile al usuario que genere una nueva
-- \`session_revoked\` (403): la sesión fue revocada
-- \`invalid_signature\` (401): la firma no es válida
-- \`page_not_found\` (404): la página no existe
+If you receive an error, the \`error.code\` field indicates the reason:
+- \`token_expired\` (401): the session has expired — ask the user to generate a new one
+- \`session_revoked\` (403): the session was revoked
+- \`invalid_signature\` (401): the signature is invalid
+- \`page_not_found\` (404): the page does not exist
 
-## URLs disponibles
+## Available URLs
 
 ${urlList}
 
@@ -163,7 +163,7 @@ ${urlList}
 \`${data.session_id}\`
 
 ---
-*Generado automáticamente por Context Pages CLI. No editar manualmente.*
+*Auto-generated by Context Pages CLI. Do not edit manually.*
 `;
 
   const resolvedPath = path.resolve(output);
@@ -201,19 +201,19 @@ async function main(): Promise<void> {
     } else if (subcommand === "delete") {
       await sessionDelete(positional[2]);
     } else {
-      fatal(`subcomando desconocido: session ${subcommand ?? ""}\nUsá --help para ver los comandos disponibles.`);
+      fatal(`unknown subcommand: session ${subcommand ?? ""}\nUse --help to see available commands.`);
     }
   } else if (command === "generate") {
     await generateClaudeMd(flags);
   } else {
-    fatal(`comando desconocido: ${command}\nUsá --help para ver los comandos disponibles.`);
+    fatal(`unknown command: ${command}\nUse --help to see available commands.`);
   }
 }
 
 main().catch((err) => {
   const msg = err?.message ?? String(err);
   if (msg.includes("Unable to connect") || msg.includes("ECONNREFUSED") || msg.includes("fetch")) {
-    fatal(`no se pudo conectar al servidor en ${SERVER_URL}. ¿Está corriendo?`);
+    fatal(`could not connect to server at ${SERVER_URL}. Is it running?`);
   }
   fatal(msg);
 });
