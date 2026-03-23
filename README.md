@@ -238,6 +238,29 @@ example-pages/
 
 Each directory contains the same set of demo pages (sales report, customers, product sheet) so you can test the full flow in your preferred language. To use your own pages, just point `PAGES_DIR` to any directory with `.txt` files.
 
+## Next Steps
+
+See the full [ROADMAP.md](./ROADMAP.md) for details. Here's what's coming next:
+
+### Controlled Discovery (Phase 2)
+
+- **Page manifest** (`pages.json`) with metadata per page: `id`, `title`, `description`, `tags`, and permission requirements
+- **`PageProvider` interface** — a pluggable system for generating context pages at runtime from any source (APIs, PDFs, databases, templates), not just static `.txt` files. Built-in providers: `FileProvider` (current), `TemplateProvider` (with session variables)
+- **Assisted discovery** — the orchestrator suggests relevant pages based on the user's task, and the generated `CLAUDE.md` includes page descriptions so the agent can decide when to read each one
+
+### Integrations (Phase 3)
+
+- **Claude Code** — separate `CLAUDE.session.md`, automatic session renewal, and `context-pages inject --tool claude-code`
+- **Cursor / Windsurf** — injection targets for `.cursor/context.md` and `.windsurfcontext`
+- **OpenAI Agents SDK** — adapter that exposes context pages as SDK tools
+- **`@context-pages/client`** — lightweight TypeScript/JS client published on npm
+
+### Open Source Ecosystem (Phase 4)
+
+- **Plugin system** for community-built `PageProvider` packages (e.g. `GitHubProvider`, `NotionProvider`, `ConfluenceProvider`, `SQLProvider`)
+- **Observability** with OpenTelemetry metrics and a simple dashboard
+- **Governance** — `CONTRIBUTING.md`, `SECURITY.md`, semantic versioning, and changelog
+
 ## License
 
 [MIT](LICENSE)
