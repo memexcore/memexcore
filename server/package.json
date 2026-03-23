@@ -1,0 +1,9 @@
+{
+  "name": "context-pages-server",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "test": "bun test src/tests/"
+  }
+}

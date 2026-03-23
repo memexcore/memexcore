@@ -1,0 +1,18 @@
+services:
+  context-pages:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    environment:
+      - PORT=${PORT:-3000}
+      - SESSION_TTL=${SESSION_TTL:-300}
+      - HMAC_TTL=${HMAC_TTL:-3600}
+      - RATE_LIMIT_RPM=${RATE_LIMIT_RPM:-60}
+    volumes:
+      - context-pages-data:/app/data
+      - ./server/pages:/app/pages:ro
+
+volumes:
+  context-pages-data:

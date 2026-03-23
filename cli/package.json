@@ -1,0 +1,11 @@
+{
+  "name": "context-pages-cli",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "context-pages": "./index.ts"
+  },
+  "scripts": {
+    "start": "bun run index.ts"
+  }
+}
