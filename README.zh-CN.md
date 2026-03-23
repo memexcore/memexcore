@@ -1,4 +1,4 @@
-# Context Pages
+# MemexCore
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Bun](https://img.shields.io/badge/runtime-Bun-f9f1e1.svg)](https://bun.sh)
@@ -6,11 +6,24 @@
 
 [English](./README.md) | [中文](./README.zh-CN.md) | [Español](./README.es.md)
 
-通过标准 HTTP 为 AI 代理提供上下文的极简 MCP 替代方案。无需自定义协议或 SDK，通过签名 URL 提供纯文本上下文页面，具备 HMAC 认证、自动密钥轮换、按会话速率限制和结构化审计日志。基于 Bun 和 SQLite 构建，占用极小且零外部依赖。
+通过标准 HTTP 为 AI 代理提供上下文的极简 MCP 替代方案。无需自定义协议或 SDK，MemexCore 提供 **Context Pages** — 通过签名 URL 交付的纯文本文档，具备 HMAC 认证、自动密钥轮换、按会话速率限制和结构化审计日志。基于 Bun 和 SQLite 构建，占用极小且零外部依赖。
+
+## 什么是 Context Pages？
+
+Context Pages 是纯文本文档（`.txt` 文件），包含 AI 代理执行任务所需的信息 — 销售报告、客户列表、产品规格、内部文档、运维手册或任何结构化知识。可以把它们理解为**在代理开始工作前，交给它的只读参考资料**。
+
+MemexCore 不需要将上下文直接嵌入提示词，也不依赖复杂的检索管道，而是通过带有过期时间的签名 URL 以 HTTP 方式提供这些页面。代理收到一个 URL，请求页面，然后阅读它 — 就像一个人打开一份文档一样。无需工具调用、无需解析、无需 SDK。
+
+每个页面具有以下特点：
+- **一个简单的 `.txt` 文件**，由你在自己的代码仓库中控制和版本管理
+- **按需提供**，通过限定会话范围的签名 URL 交付
+- **设计上即是临时的** — URL 会过期、会话可被撤销、不做任何缓存
+
+这使得 Context Pages 非常适合为代理提供最新的、范围明确的信息，而无需给予它们对数据库或 API 的广泛访问权限。
 
 ## 为什么不用 MCP？
 
-| | Context Pages | MCP |
+| | MemexCore | MCP |
 |---|---|---|
 | **协议** | 标准 HTTP + 签名 URL | 基于 stdio/SSE 的自定义协议 |
 | **集成方式** | 任何 HTTP 客户端（`curl`、`fetch`） | 每种语言需要 MCP SDK |
@@ -18,7 +31,7 @@
 | **部署** | 一条 `docker compose up` | 服务器 + 客户端 SDK + 每个代理的配置 |
 | **上下文交付** | 通过 GET 返回纯文本 — 代理原生读取 | 工具调用返回结构化对象 |
 
-MCP 适用于双向工具调用场景。Context Pages 适用于你只需要**让代理读取一些内容**的场景 — 安全、无 SDK、无 schema、无繁琐配置。
+MCP 适用于双向工具调用场景。MemexCore 适用于你只需要**让代理读取一些内容**的场景 — 安全、无 SDK、无 schema、无繁琐配置。
 
 ## 快速示例
 
@@ -51,7 +64,7 @@ curl -s "<第2步返回的签名URL>"
 ```mermaid
 sequenceDiagram
     participant U as 用户 / 编排器
-    participant S as Context Pages 服务器
+    participant S as MemexCore 服务器
     participant A as AI 代理
 
     U->>S: POST /session {user_id, pages}
@@ -86,6 +99,7 @@ HMAC-SHA256(secret, "{session_id}:{page_id}:{exp}") == sig?
 | `GET` | `/context/:page` | 验证 HMAC 并提供纯文本 |
 | `GET` | `/session/:id` | 查看会话状态 |
 | `DELETE` | `/session/:id` | 撤销会话 |
+| `GET` | `/health` | 服务器运行时返回 `{"ok": true}` |
 
 ## 环境要求
 
@@ -169,6 +183,47 @@ HMAC 密钥自动生成，每 `HMAC_TTL` 秒轮换一次（默认：1 小时）�
 ```bash
 cd server && bun test src/tests/
 ```
+
+## CLI
+
+`cli/` 目录包含一个命令行工具，用于与服务器交互并为 AI 代理生成上下文文件。
+
+### 安装
+
+```bash
+cd cli && bun link
+```
+
+### 使用方法
+
+```bash
+# 创建会话并获取签名 URL
+context-pages session create --user agent-01 --pages sales-report,customers
+
+# 查看会话
+context-pages session get <session_id>
+
+# 撤销会话
+context-pages session delete <session_id>
+
+# 生成包含签名 URL 的 CLAUDE.md 文件，供 AI 代理直接使用
+context-pages generate --user agent-01 --pages sales-report,customers
+
+# 生成到自定义路径
+context-pages generate --user agent-01 --pages sales-report --output ./project/CLAUDE.md
+```
+
+`generate` 命令会创建一个会话，并生成一个包含指令和签名 URL 的 Markdown 文件，AI 代理可以直接使用。默认写入 `./CLAUDE.md`。
+
+### 选项
+
+| 参数 | 描述 |
+|---|---|
+| `--server <url>` | 服务器 URL（默认：`$SERVER_URL` 或 `http://localhost:3000`） |
+| `--user <id>` | 用户或代理标识符 |
+| `--pages <p1,p2,...>` | 逗号分隔的页面名称列表 |
+| `--output <path>` | `generate` 的输出路径（默认：`./CLAUDE.md`） |
+| `--help` | 显示帮助信息 |
 
 ## 示例页面
 

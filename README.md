@@ -1,4 +1,4 @@
-# Context Pages
+# MemexCore
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Bun](https://img.shields.io/badge/runtime-Bun-f9f1e1.svg)](https://bun.sh)
@@ -6,11 +6,24 @@
 
 [English](./README.md) | [中文](./README.zh-CN.md) | [Español](./README.es.md)
 
-A minimalist alternative to the Model Context Protocol (MCP) for providing context to AI agents via standard HTTP. Instead of requiring custom protocols or SDKs, it serves plain-text context pages through signed URLs with HMAC authentication, automatic key rotation, per-session rate limiting, and structured audit logging. Built with Bun and SQLite for minimal footprint and zero external dependencies.
+A minimalist alternative to the Model Context Protocol (MCP) for providing context to AI agents via standard HTTP. Instead of requiring custom protocols or SDKs, MemexCore serves **Context Pages** — plain-text documents delivered through signed URLs with HMAC authentication, automatic key rotation, per-session rate limiting, and structured audit logging. Built with Bun and SQLite for minimal footprint and zero external dependencies.
+
+## What are Context Pages?
+
+Context Pages are plain-text documents (`.txt` files) that contain information an AI agent needs to perform a task — sales reports, customer lists, product specs, internal docs, runbooks, or any structured knowledge. Think of them as **read-only reference material you hand to an agent** before it starts working.
+
+Instead of embedding context directly into prompts or relying on complex retrieval pipelines, MemexCore serves these pages over HTTP through time-limited signed URLs. The agent receives a URL, fetches the page, and reads it — just like a person opening a document. No tool calls, no parsing, no SDK required.
+
+Each page is:
+- **A simple `.txt` file** you control and version in your own repository
+- **Served on demand** through a signed URL scoped to a session
+- **Ephemeral by design** — URLs expire, sessions can be revoked, and nothing is cached
+
+This makes Context Pages ideal for feeding agents with up-to-date, scoped information without giving them broad access to databases or APIs.
 
 ## Why not MCP?
 
-| | Context Pages | MCP |
+| | MemexCore | MCP |
 |---|---|---|
 | **Protocol** | Standard HTTP + signed URLs | Custom protocol over stdio/SSE |
 | **Integration** | Any HTTP client (`curl`, `fetch`) | Requires MCP SDK per language |
@@ -18,7 +31,7 @@ A minimalist alternative to the Model Context Protocol (MCP) for providing conte
 | **Setup** | One `docker compose up` | Server + client SDK + config per agent |
 | **Context delivery** | Plain text over GET — agents read it natively | Tool calls that return structured objects |
 
-MCP is powerful for bidirectional tool use. Context Pages is for when you just need to **give an agent something to read** — securely, with no SDK, no schema, and no ceremony.
+MCP is powerful for bidirectional tool use. MemexCore is for when you just need to **give an agent something to read** — securely, with no SDK, no schema, and no ceremony.
 
 ## Quick Example
 
@@ -51,7 +64,7 @@ The signed URL is all the agent needs. No tokens, no SDK, no config.
 ```mermaid
 sequenceDiagram
     participant U as User / Orchestrator
-    participant S as Context Pages Server
+    participant S as MemexCore Server
     participant A as AI Agent
 
     U->>S: POST /session {user_id, pages}
@@ -86,6 +99,7 @@ The agent is **completely stateless** in terms of auth. It doesn't store credent
 | `GET` | `/context/:page` | Validates HMAC and serves plain text |
 | `GET` | `/session/:id` | Inspects session state |
 | `DELETE` | `/session/:id` | Revokes a session |
+| `GET` | `/health` | Returns `{"ok": true}` if the server is running |
 
 ## Requirements
 
@@ -169,6 +183,47 @@ All context server responses include:
 ```bash
 cd server && bun test src/tests/
 ```
+
+## CLI
+
+The `cli/` directory includes a command-line tool for interacting with the server and generating context files for AI agents.
+
+### Install
+
+```bash
+cd cli && bun link
+```
+
+### Usage
+
+```bash
+# Create a session and get signed URLs
+context-pages session create --user agent-01 --pages sales-report,customers
+
+# Inspect a session
+context-pages session get <session_id>
+
+# Revoke a session
+context-pages session delete <session_id>
+
+# Generate a CLAUDE.md file with signed URLs ready for an AI agent
+context-pages generate --user agent-01 --pages sales-report,customers
+
+# Generate to a custom path
+context-pages generate --user agent-01 --pages sales-report --output ./project/CLAUDE.md
+```
+
+The `generate` command creates a session and writes a Markdown file with instructions and signed URLs that an AI agent can follow directly. By default it writes to `./CLAUDE.md`.
+
+### Options
+
+| Flag | Description |
+|---|---|
+| `--server <url>` | Server URL (default: `$SERVER_URL` or `http://localhost:3000`) |
+| `--user <id>` | User or agent identifier |
+| `--pages <p1,p2,...>` | Comma-separated list of page names |
+| `--output <path>` | Output path for `generate` (default: `./CLAUDE.md`) |
+| `--help` | Show help |
 
 ## Example Pages
 
