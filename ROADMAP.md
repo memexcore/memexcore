@@ -17,8 +17,6 @@ Goal: functional proof of concept running locally.
 - [x] Claude Code integration via `CLAUDE.md`
 - [x] Basic README documentation
 
-**Exit criteria:** the full cycle works end-to-end locally with Claude Code.
-
 ---
 
 ## Phase 1 — Secure foundations (complete)
@@ -47,8 +45,6 @@ Goal: make the core production-ready before any external integration.
 - [x] Docker Compose to start the full stack in one command
 - [x] Example context pages in three languages (English, Spanish, Chinese Simplified)
 - [x] `GET /health` endpoint
-
-**Exit criteria:** an external auditor can review the security model without finding obvious attack vectors.
 
 ---
 
