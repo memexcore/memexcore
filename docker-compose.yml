@@ -10,6 +10,7 @@ services:
       - SESSION_TTL=${SESSION_TTL:-300}
       - HMAC_TTL=${HMAC_TTL:-3600}
       - RATE_LIMIT_RPM=${RATE_LIMIT_RPM:-60}
+      - PAGES_DIR=${PAGES_DIR:-/app/pages}
     volumes:
       - context-pages-data:/app/data
       - ./example-pages/en:/app/pages:ro
