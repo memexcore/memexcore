@@ -6,6 +6,8 @@
 
 [English](./README.md) | [中文](./README.zh-CN.md) | [Español](./README.es.md)
 
+![Demo](https://github.com/user-attachments/assets/628d9326-2bce-4c19-93d0-ecbe53a33ec1)
+
 A minimalist alternative to the Model Context Protocol (MCP) for providing context to AI agents via standard HTTP. Instead of requiring custom protocols or SDKs, MemexCore serves **Context Pages** — plain-text documents delivered through signed URLs with HMAC authentication, automatic key rotation, per-session rate limiting, and structured audit logging. Built with Bun and SQLite for minimal footprint and zero external dependencies.
 
 ## What are Context Pages?
